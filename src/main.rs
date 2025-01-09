@@ -34,7 +34,7 @@ fn main() {
     }
 
     // Get the size of the ROM file
-    let file_size_a = metadata(rom_path).map(|m| m.len()).unwrap_or(0);
+    let file_size = metadata(rom_path).map(|m| m.len()).unwrap_or(0);
 
     // Detect the type of ROM and trim it
     match detect_rom(rom_path) {
@@ -57,14 +57,15 @@ fn main() {
     }
 
     // Get the size of the trimmed ROM file
-    let file_size_b = metadata(rom_path).map(|m| m.len()).unwrap_or(0);
-    // Calculate the savings
-    let savings = (file_size_a - file_size_b) / file_size_a * 100;
+    let file_size_trimmed = metadata(rom_path).map(|m| m.len()).unwrap_or(0);
 
     // Print the results
-    if savings == 0 {
+    if file_size == file_size_trimmed {
         eprintln!("Error: No savings");
     } else {
-        println!("Before: {file_size_a} | After: {file_size_b} | Savings: {savings:.2}%");
+        println!(
+            "Before: {file_size} | After: {file_size_trimmed} | Savings: {:.2}%",
+            (file_size - file_size_trimmed) / file_size * 100 // Calculate the savings
+        );
     }
 }
