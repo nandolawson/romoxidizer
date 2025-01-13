@@ -1,11 +1,3 @@
-/*
-romoxidizer
-Copyright 2025 Nando Lawson
-
-Licensed under the GPL, Version 3 <https://github.com/nandolawson/romoxidizer/blob/main/LICENSE>.
-This file may not be copied, modified, or distributed except according to those terms.
-*/
-
 use std::io;
 
 fn main() -> io::Result<()> {
