@@ -1,4 +1,4 @@
-fn main() {
+fn main() -> std::io::Result<()> {
     use {
         romoxidizer::{
             check_file, detect_rom, trim,
@@ -28,15 +28,21 @@ fn main() {
     // Get the size of the ROM file
     let file_size = metadata(rom_path).map(|m| m.len()).unwrap_or(0);
 
+    // Open ROM file
+    let mut file = std::fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(rom_path)?;
+
     // Detect the type of ROM and trim it
-    match detect_rom(rom_path) {
+    match detect_rom(&mut file) {
         Ok(ref rom_type) if rom_type == "GBA" => {
-            if let Err(e) = trim(rom_path, GBA) {
+            if let Err(e) = trim(&mut file, GBA) {
                 eprintln!("Trim failed: {e}");
             }
         }
         Ok(ref rom_type) if rom_type == "NDS" => {
-            if let Err(e) = trim(rom_path, NDS) {
+            if let Err(e) = trim(&mut file, NDS) {
                 eprintln!("Trim failed: {e}");
             }
         }
@@ -53,11 +59,11 @@ fn main() {
 
     // Print the results
     if file_size == file_size_trimmed {
-        eprintln!("Error: No savings");
-    } else {
-        println!(
-            "Before: {file_size} | After: {file_size_trimmed} | Savings: {:.2}%",
-            (file_size - file_size_trimmed) / file_size * 100 // Calculate the savings
-        );
+        return Err(std::io::Error::new(std::io::ErrorKind::Other, "No savings"));
     }
+    println!(
+        "Before: {file_size} | After: {file_size_trimmed} | Savings: {:.2}%",
+        (file_size - file_size_trimmed) / file_size * 100 // Calculate the savings
+    );
+    Ok(())
 }
