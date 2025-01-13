@@ -2,7 +2,7 @@
 
 [![Open in Dev Container](https://img.shields.io/badge/Open%20in%20Dev%20Container-blue?style=flat&logo=docker&logoColor=%23fff)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/nandolawson/romoxidizer)
 
-This software is used to trim ROMs for Nintendo Game Boy Advance and in the future Nintendo DS. It is written entirely in Rust and works on Windows, Linux & macOS, regardless of whether the CPU architecture is x86 or ARM. As far as I know, this is the only open-source software of its kind.
+This software is used to trim ROMs for Nintendo Game Boy Advance and in the future Nintendo DS. It is written entirely in Rust and works on Windows & Linux, regardless of whether the CPU architecture is x86 or ARM. As far as I know, this is the only open-source software of its kind.
 
 > ⚠ romoxidizer is currently in early development. Even though the software has been tested, only ROMs for which a backup exists should be processed.
 
@@ -18,7 +18,11 @@ Done! The ROM is trimmed.
 
 ## Compiling
 
-No extra steps necessary. Just run cargo build.
+> ℹ It is recommended to use the provided Dev Container as it is pre-configured for this project
+
+`just` and `cargo-edit` need to be installed via Cargo. Besides of them, you need to add `x86_64-unknown-linux-gnu` / `x86_64-pc-windows-gnu` as a target via rustup. It might also be possible that `mingw-w64` needs to be installed to compile for Windows on Linux.
+
+Once everything is set up, run `just build`. If cross-compiling / a release build is desired, the command would be `just build release`.
 
 ## Contributing
 
