@@ -78,7 +78,7 @@ name:
 [doc('Upgrade dependencies')]
 upgrade:
     echo "Upgrade all dependencies..."
-    cargo upgrade > /dev/null && \ # Not quiet yet
+    cargo upgrade >/dev/null 2>&1 && \
     echo "Done!"
 
 [doc('Show version of the project')]
