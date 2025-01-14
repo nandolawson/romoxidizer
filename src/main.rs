@@ -10,7 +10,7 @@ fn main() -> std::io::Result<()> {
     // Get the path to the ROM file
     let args: Vec<String> = std::env::args().collect();
 
-    // Check if the user provided a ROM file
+    // Check if the user provided an argument
     if args.len() != 2 {
         eprintln!("Usage: {} <rom>", args[0]);
         exit(1);
@@ -19,7 +19,7 @@ fn main() -> std::io::Result<()> {
     // Get the path to the ROM file
     let rom_path = args[1].as_str();
 
-    // Check if the file exists and is at least 200 bytes long
+    // Check if the file exists and is at least 1024 bytes long
     if !check_file(rom_path) {
         eprintln!("File is not supported or path is invalid");
         exit(1);

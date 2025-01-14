@@ -25,16 +25,16 @@ pub enum Type {
 /// - `path`: Path to a ROM file
 #[must_use]
 pub fn check_file(path: &str) -> bool {
-    // Open the file and check if it is at least 200 bytes long
+    // Open the file and check if it is at least 1024 bytes long
     match File::open(path).and_then(|file| file.metadata()) {
-        Ok(metadata) => metadata.len() >= 200,
+        Ok(metadata) => metadata.len() >= 1024,
         Err(_) => false,
     }
 }
 
 /// Detects the type of ROM based on the SHA256 hash of Nintendo logo within the ROM header.
-/// A Game Boy Advance ROM, will contain the Nintendo Logo at 0x004.
-/// A DS ROM will contain a specific byte at 0x012.
+/// A Game Boy Advance ROM will contain the Nintendo Logo at 0x004.
+/// A DS ROM will contain the Nintendo Logo at 0x0C0.
 ///
 /// # Arguments
 /// - `file`: A reference to an open file
@@ -56,7 +56,7 @@ pub fn detect_rom(file: &mut File) -> Result<String, io::Error> {
     // Check if the a DS Nintendo logo is present
     } else if hash(file, 0x0C0) == nintendo_logo_hash {
         Ok("NDS".to_string())
-    // Return an error if the ROM is not supported
+    // Return an error if the file is not supported
     } else {
         Err(io::Error::new(
             io::ErrorKind::InvalidData,
@@ -90,7 +90,7 @@ fn hash(file: &mut File, address: u64) -> String {
     format!("{:x}", hasher.finalize())
 }
 
-/// Trims the ROM file by removing any trailing zeros.
+/// Trims the ROM file by removing 0x00 & 0xFF 0xFF at the end of the file.
 ///
 /// # Arguments
 /// - `file`: A reference to an open file with write permissions
