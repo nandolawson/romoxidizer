@@ -2,7 +2,7 @@
 	"appPort": [],
 	"capAdd": [],
 	"containerEnv": {
-		"CROSS_CONTAINER_IN_CONTAINER": "true"
+		"CROSS_CONTAINER_IN_CONTAINER": "false"
 	},
 	"containerUser": "",
 	"customizations": {
