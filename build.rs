@@ -1,6 +1,6 @@
-use std::io;
+use std::io::Result;
 
-fn main() -> io::Result<()> {
+fn main() -> Result<()> {
     use std::env;
 
     // Add resources to Windows executable
@@ -11,7 +11,7 @@ fn main() -> io::Result<()> {
     Ok(())
 }
 
-fn add_windows_resources() -> io::Result<()> {
+fn add_windows_resources() -> Result<()> {
     use winresource::{
         VersionInfo::{FILEOS, FILETYPE, FILEVERSION},
         WindowsResource,
