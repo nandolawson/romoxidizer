@@ -1,0 +1,91 @@
+{
+	"appPort": [],
+	"capAdd": [],
+	"containerEnv": {
+		"CROSS_CONTAINER_IN_CONTAINER": "true"
+	},
+	"containerUser": "",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"DavidAnson.vscode-markdownlint",
+				"dustypomerleau.rust-syntax",
+				"fill-labs.dependi",
+				"github.vscode-github-actions",
+				"ms-azuretools.vscode-docker",
+				"nefrob.vscode-just-syntax",
+				"rust-lang.rust-analyzer",
+				"tamasfe.even-better-toml",
+				"vadimcn.vscode-lldb"
+			],
+			"settings": {
+				"editor.formatOnSave": true,
+				"markdownlint.run": "onType",
+				"rust-analyzer.checkOnSave.command": "clippy",
+				"[rust]": {
+					"editor.defaultFormatter": "rust-lang.rust-analyzer",
+					"editor.formatOnSave": true
+				}
+			}
+		}
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/docker-in-docker:latest": {
+			"azureDnsAutoDetection": true,
+			"disableIp6tables": true,
+			"dockerDashComposeVersion": "none",
+			"dockerDefaultAddressPool": "",
+			"installDockerBuildx": false,
+			"installDockerComposeSwitch": false,
+			"moby": true,
+			"mobyBuildxVersion": "latest",
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/git:latest": {
+			"ppa": false,
+			"version": "os-provided"
+		},
+		"ghcr.io/devcontainers/features/github-cli:latest": {
+			"installDirectlyFromGitHubRelease": true,
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/rust:latest": {
+			"targets": "",
+			"profile": "default",
+			"version": "latest"
+		}
+	},
+	"forwardPorts": [],
+	"hostRequirements": {
+		"cpus": 1,
+		"gpu": false,
+		"memory": "2gb",
+		"storage": "5gb"
+	},
+	"image": "debian:latest",
+	"init": false,
+	"initializeCommand": "",
+	"mounts": [],
+	"name": "romoxidizer",
+	"onCreateCommand": {
+		"apt": "apt update -y && apt install -y mingw-w64",
+		"cargo": "cargo install cargo-edit cross just"
+	},
+	"otherPortsAttributes": {},
+	"overrideCommand": true,
+	"overrideFeatureInstallOrder": [],
+	"portsAttributes": {},
+	"postAttachCommand": "",
+	"postCreateCommand": "",
+	"postStartCommand": "rustup update",
+	"privileged": false,
+	"remoteEnv": {},
+	"remoteUser": "",
+	"runArgs": [],
+	"securityOpt": [],
+	"shutdownAction": "stopContainer",
+	"updateContentCommand": "",
+	"updateRemoteUserUID": true,
+	"userEnvProbe": "loginInteractiveShell",
+	"waitFor": "updateContentCommand"
+}
