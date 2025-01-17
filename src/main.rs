@@ -16,7 +16,7 @@ fn main() -> Result<(), Error> {
 
 fn cli(path: &str) -> Result<(), Error> {
     use {
-        romoxidizer::{check_file, detect_rom, trim},
+        romoxidizer::{detect_rom, trim},
         std::fs::metadata,
     };
 
@@ -29,15 +29,13 @@ fn cli(path: &str) -> Result<(), Error> {
         return Err(Error::InvalidPath);
     };
 
-    // Check if the file exists and is at least 1024 bytes long
-    check_file(&mut file)?;
-
     // Get the size of the ROM file
     let file_size = file.metadata().unwrap().len();
 
-    // Detect the type of ROM and trim it
+    // Check if the file is a legitimate ROM file and is at least 1024 bytes long
     detect_rom(&mut file)?;
 
+    // Trim the ROM
     trim(&mut file)?;
 
     // Get the size of the trimmed ROM file

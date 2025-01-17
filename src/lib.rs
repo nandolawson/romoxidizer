@@ -20,42 +20,26 @@ use {
 };
 
 /// Checks if the file exists and is at least 1024 bytes long.
-/// If both conditions are met, the function returns `true`.
-///
-/// # Arguments
-/// - `path`: Path to a ROM file
-///
-/// # Errors
-/// This function returns an error if the path is invalid or the file too small
-pub fn check_file(file: &mut File) -> Result<(), Error> {
-    // Check the path and file size
-    match file.metadata() {
-        Ok(metadata) => {
-            // Check if the file contains at least 1024 bytes
-            if metadata.len() >= 0x400 {
-                Ok(()) // Success
-            } else {
-                Err(Error::TooSmall) // File is too small
-            }
-        }
-        Err(_) => Err(Error::InvalidPath), // Path not found
-    }
-}
-
-/// Detects the type of ROM based on the SHA256 hash of Nintendo logo within the ROM header.
-/// A Game Boy Advance ROM will contain the Nintendo Logo at 0x004.
-/// A DS ROM will contain the Nintendo Logo at 0x0C0.
+/// Also detects the type of ROM based on the SHA256 hash of the Nintendo logo within the ROM header.
+/// A Game Boy Advance ROM will contain the Logo at 0x004.
+/// A DS ROM will contain the Logo at 0x0C0.
 ///
 /// # Arguments
 /// - `file`: A reference to an open file
 ///
 /// # Returns
-/// - `Ok`: Returns the type of the ROM as a static string (`"GBA"` or `"NDS"`).
-/// - `Err`: Returns an error if the ROM is not supported.
+/// - `Ok`: Returns if the file is a legitimate ROM file
+/// - `Err`: Returns an error if the file is not supported
 ///
 /// # Errors
-/// This function will return an error if the file isn't supported by this software.
+/// This function will return an error if the file isn't a legitimate GBA / DS ROM.
+/// That is the case if the file is under 1024 bytes in size or if the Nintendo Logo can't be found.
 pub fn detect_rom(file: &mut File) -> Result<(), Error> {
+    // Check if the file contains at least 1024 bytes
+    if file.metadata().map(|m| m.len() < 0x400).unwrap_or(true) {
+        return Err(Error::TooSmall); // File is too small
+    }
+
     // Hash of the Nintendo logo
     // The hash is the same for both ROM types
     let nintendo_logo_hash = "08a0153cfd6b0ea54b938f7d209933fa849da0d56f5a34c481060c9ff2fad818";

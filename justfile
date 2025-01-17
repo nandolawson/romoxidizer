@@ -19,7 +19,6 @@ set working-directory := ""
 NAME := `cargo pkgid | sed -rn 's|^.*://.*/([^/]+)#.*$|\1|p'`
 VERSION := `cargo pkgid | sed -rn s'/^.*#(.*)$/\1/p'`
 
-
 #>> Aliases
 
 alias b := build
@@ -38,18 +37,28 @@ default:
 
 [doc('Build the project [PROFILE can be "debug" or "release"]')]
 build PROFILE="debug":
-    #!/usr/bin/env sh
-    echo "Create {{ PROFILE }} build..."
+    #!/usr/bin/bash
     if [ -z "{{ PROFILE }}" ] || [ "{{ PROFILE }}" = "debug" ]
     then
-        cargo build --quiet; \
+        echo "Compiling debug build..."
+        cargo build
     elif [ "{{ PROFILE }}" = "release" ]
     then
-        echo "Linux (x86) build"
-        cargo build --target x86_64-unknown-linux-gnu --release --quiet
-        echo "Windows (x86) build"
-        cargo build --target x86_64-pc-windows-gnu --release --quiet
-    fi && \
+        targets=("x86_64-unknown-linux-gnu" "aarch64-unknown-linux-gnu" "x86_64-pc-windows-gnu")
+        for target in "${targets[@]}"
+        do
+            echo "Compiling build for target: $(case "$target" in
+                "x86_64-unknown-linux-gnu") echo "Linux (x86)";;
+                "aarch64-unknown-linux-gnu") echo "Linux (arm64)";;
+                "x86_64-pc-windows-gnu") echo "Windows (x86)";;
+                *);;
+            esac)..."
+            cross build --target $target --release || {
+                echo "Build failed!" >&2
+                exit 1
+            }
+        done
+    fi
     echo "Done!"
 
 [doc('Remove target directory')]

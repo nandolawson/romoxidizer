@@ -21,7 +21,7 @@ Done! The ROM is trimmed.
 
 > ℹ It is recommended to use the provided Dev Container as it is pre-configured for this project
 
-`just` and `cargo-edit` need to be installed via Cargo. Besides of them, you need to add `x86_64-unknown-linux-gnu` / `x86_64-pc-windows-gnu` as a target via rustup. It might also be possible that `mingw-w64` needs to be installed to compile for Windows on Linux.
+`just`, `cargo-edit` & `cross` need to be installed via Cargo. Besides of them, you need to install Docker on your system.
 
 Once everything is set up, run `just build`. If cross-compiling / a release build is desired, the command would be `just build release`.
 
