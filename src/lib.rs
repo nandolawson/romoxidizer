@@ -6,29 +6,39 @@
 )]
 #![doc = include_str!("../README.md")] // Adding the README to the documentation
 
-use std::{
-    fs::File,
-    io::{self, Read, Seek, SeekFrom},
+pub mod modals;
+
+use {
+    modals::{
+        Error,
+        Platform::{self, Gba, Nds},
+    },
+    std::{
+        fs::File,
+        io::{Read, Seek, SeekFrom},
+    },
 };
 
-/// The type of ROM that is being trimmed.
-#[derive(Clone, Copy, Debug)]
-pub enum Type {
-    GBA,
-    NDS,
-}
-
-/// Checks if the file exists and is at least 200 bytes long.
+/// Checks if the file exists and is at least 1024 bytes long.
 /// If both conditions are met, the function returns `true`.
 ///
 /// # Arguments
 /// - `path`: Path to a ROM file
-#[must_use]
-pub fn check_file(path: &str) -> bool {
-    // Open the file and check if it is at least 1024 bytes long
-    match File::open(path).and_then(|file| file.metadata()) {
-        Ok(metadata) => metadata.len() >= 1024,
-        Err(_) => false,
+///
+/// # Errors
+/// This function returns an error if the path is invalid or the file too small
+pub fn check_file(file: &mut File) -> Result<(), Error> {
+    // Check the path and file size
+    match file.metadata() {
+        Ok(metadata) => {
+            // Check if the file contains at least 1024 bytes
+            if metadata.len() >= 0x400 {
+                Ok(()) // Success
+            } else {
+                Err(Error::TooSmall) // File is too small
+            }
+        }
+        Err(_) => Err(Error::InvalidPath), // Path not found
     }
 }
 
@@ -41,27 +51,20 @@ pub fn check_file(path: &str) -> bool {
 ///
 /// # Returns
 /// - `Ok`: Returns the type of the ROM as a static string (`"GBA"` or `"NDS"`).
-/// - `Err`: Returns an `io::Error` if the ROM is not supported.
+/// - `Err`: Returns an error if the ROM is not supported.
 ///
 /// # Errors
 /// This function will return an error if the file isn't supported by this software.
-pub fn detect_rom(file: &mut File) -> Result<String, io::Error> {
+pub fn detect_rom(file: &mut File) -> Result<(), Error> {
     // Hash of the Nintendo logo
     // The hash is the same for both ROM types
     let nintendo_logo_hash = "08a0153cfd6b0ea54b938f7d209933fa849da0d56f5a34c481060c9ff2fad818";
 
-    // Check if the GBA Nintendo logo is present
-    if hash(file, 0x004) == nintendo_logo_hash {
-        Ok("GBA".to_string())
-    // Check if the a DS Nintendo logo is present
-    } else if hash(file, 0x0C0) == nintendo_logo_hash {
-        Ok("NDS".to_string())
-    // Return an error if the file is not supported
+    // Check if the GBA or NDS Nintendo logo is present
+    if hash(file, Gba) == nintendo_logo_hash || hash(file, Nds) == nintendo_logo_hash {
+        Ok(())
     } else {
-        Err(io::Error::new(
-            io::ErrorKind::InvalidData,
-            "File not supported",
-        ))
+        Err(Error::NotSupported) // Return an error if the file is not supported
     }
 }
 
@@ -70,16 +73,15 @@ pub fn detect_rom(file: &mut File) -> Result<String, io::Error> {
 ///
 /// # Arguments
 /// - `file`: A reference to an open file
-/// - `address`: Portion of the ROM that should be hashed
-fn hash(file: &mut File, address: u64) -> String {
+/// - `platform`: Type of ROM. `Gba` & `Nds` are supported.
+fn hash(file: &mut File, platform: Platform) -> String {
     use {
         sha2::{Digest, Sha256},
         std::io::{Seek, SeekFrom},
     };
-
     // Read specific portion of the ROM
-    file.seek(SeekFrom::Start(address)).unwrap();
-    let mut buffer = vec![0; 156];
+    file.seek(SeekFrom::Start(platform.logoaddress())).unwrap();
+    let mut buffer = vec![0x000; 0x09C];
     file.read_exact(&mut buffer).unwrap();
 
     // Hash the specific portion of the ROM
@@ -90,27 +92,34 @@ fn hash(file: &mut File, address: u64) -> String {
     format!("{:x}", hasher.finalize())
 }
 
-/// Trims the ROM file by removing 0x00 & 0xFF 0xFF at the end of the file.
+/// Trims the ROM file by removing 0x00 & 0xFF at the end of the file.
 ///
 /// # Arguments
 /// - `file`: A reference to an open file with write permissions
 /// # Errors
-/// This function will return an error if it is unable to determine the length of the ROM or if something goes wrong with the file I/O.
-pub fn trim(file: &mut File, _rom_type: Type) -> std::io::Result<()> {
+/// This function will return an error if there is nothing to trim within the file. It will also return an error if any IO error returns.
+pub fn trim(file: &mut File) -> Result<(), Error> {
     // Read file to buffer
-    file.seek(SeekFrom::Start(0))?;
+    file.seek(SeekFrom::Start(0x000)).map_err(|_| Error::Io)?;
+
     let mut buffer = Vec::new();
-    file.read_to_end(&mut buffer)?;
+    file.read_to_end(&mut buffer).map_err(|_| Error::Io)?;
 
     // Find last relevant position in the file
     let trim_position = buffer
         .iter()
         .rposition(|&byte| byte != 0x00 && byte != 0xFF)
         .unwrap_or(0)
-        + 1;
+        + 0x001;
+
+    // Check if the file is already trimmed
+    if trim_position == buffer.len() {
+        return Err(Error::AlreadyTrimmed);
+    }
 
     // Trim the file
-    file.set_len(trim_position as u64)?;
-
+    if file.set_len(trim_position as u64).is_err() {
+        return Err(Error::Io);
+    }
     Ok(())
 }
